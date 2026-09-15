@@ -13,15 +13,18 @@
             --primary: #10b981;
             --border: #334155;
             --danger: #ef4444;
+            --accent: #38bdf8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 600px; width: 100%; background: var(--card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); }
+        .container { max-width: 600px; width: 100%; }
+        .card { background: var(--card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
         h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        h2 { font-size: 1.1rem; color: var(--text); margin-bottom: 12px; }
         p.desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; line-height: 1.4; }
         .form-group { margin-bottom: 16px; }
         label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 500; }
-        select, textarea {
+        select, textarea, input[type="text"] {
             width: 100%; padding: 10px; background: #0b1120; border: 1px solid var(--border);
             border-radius: 6px; color: var(--text); font-size: 0.95rem; outline: none;
         }
@@ -43,40 +46,68 @@
             display: none; margin-top: 15px; padding: 12px; background: rgba(239, 68, 68, 0.1);
             color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; font-size: 0.85rem;
         }
+        .status-result {
+            display: none; margin-top: 16px; padding: 14px; background: #0b1120;
+            border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
+        }
+        .status-pill {
+            display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold;
+            background: rgba(56, 189, 248, 0.2); color: var(--accent); margin-top: 6px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <span class="secure-badge">🔒 AES-256 क्लाइंट एन्क्रिप्टेड | शून्य IP लॉगिंग</span>
-        <h1>Zero Crime India</h1>
-        <p class="desc">आपकी पहचान 100% अनाम है। आपका विवरण डेटाबेस में जाने से पहले ब्राउज़र में ही सुरक्षित कोड में बदल जाता है।</p>
+        <!-- शिकायत दर्ज करने का फ़ॉर्म -->
+        <div class="card">
+            <span class="secure-badge">🔒 AES-256 क्लाइंट एन्क्रिप्टेड | शून्य IP लॉगिंग</span>
+            <h1>Zero Crime India</h1>
+            <p class="desc">आपकी पहचान 100% अनाम है। आपका विवरण डेटाबेस में जाने से पहले ब्राउज़र में ही सुरक्षित कोड में बदल जाता है।</p>
 
-        <form id="tipForm">
-            <div class="form-group">
-                <label for="category">अपराध की श्रेणी</label>
-                <select id="category" required>
-                    <option value="">-- श्रेणी चुनें --</option>
-                    <option value="cyber">साइबर अपराध / ऑनलाइन फ्रॉड</option>
-                    <option value="corruption">भ्रष्टाचार / रिश्वत</option>
-                    <option value="harassment">उत्पीड़न / धमकी</option>
-                    <option value="other">अन्य संवेदनशील मामला</option>
-                </select>
+            <form id="tipForm">
+                <div class="form-group">
+                    <label for="category">अपराध की श्रेणी</label>
+                    <select id="category" required>
+                        <option value="">-- श्रेणी चुनें --</option>
+                        <option value="cyber">साइबर अपराध / ऑनलाइन फ्रॉड</option>
+                        <option value="corruption">भ्रष्टाचार / रिश्वत</option>
+                        <option value="harassment">उत्पीड़न / धमकी</option>
+                        <option value="other">अन्य संवेदनशील मामला</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="details">विवरण (नाम या व्यक्तिगत पहचान न दें)</label>
+                    <textarea id="details" placeholder="घटना की पूरी जानकारी यहाँ लिखें..." required></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn">सुरक्षित रूप से भेजें</button>
+            </form>
+
+            <div id="errorBox" class="error-box"></div>
+
+            <div id="receipt">
+                <strong style="color: var(--primary);">रिपोर्ट डेटाबेस में सुरक्षित दर्ज हो गई!</strong>
+                <p style="margin-top: 6px; font-size: 0.8rem; color: var(--muted);">आपकी अनाम रसीद (टोकन आईडी):</p>
+                <p id="tokenDisplay" style="font-family: monospace; color: #38bdf8; word-break: break-all; margin-top: 4px; font-weight: bold;"></p>
+                <p style="margin-top: 8px; font-size: 0.75rem; color: var(--muted);">* इस टोकन को सुरक्षित रख लें। इसी से आप नीचे अपनी रिपोर्ट की स्थिति जान सकेंगे।</p>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="details">विवरण (नाम या व्यक्तिगत पहचान न दें)</label>
-                <textarea id="details" placeholder="घटना की पूरी जानकारी यहाँ लिखें..." required></textarea>
+        <!-- स्टेटस चेक करने का सेक्शन -->
+        <div class="card">
+            <h2>🔍 रिपोर्ट की स्थिति (Status) जाँचें</h2>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 12px;">अपनी टोकन आईडी दर्ज करके देखें कि आपकी शिकायत पर क्या कार्रवाई हुई है:</p>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="trackTokenInput" placeholder="उदा. ZCI-xxxx-xxxx">
+                <button onclick="checkStatus()" style="width: auto; padding: 10px 18px; white-space: nowrap;">जाँचें</button>
             </div>
-
-            <button type="submit" id="submitBtn">सुरक्षित रूप से भेजें</button>
-        </form>
-
-        <div id="errorBox" class="error-box"></div>
-
-        <div id="receipt">
-            <strong style="color: var(--primary);">रिपोर्ट डेटाबेस में सुरक्षित दर्ज हो गई!</strong>
-            <p style="margin-top: 6px; font-size: 0.8rem; color: var(--muted);">आपकी अनाम रसीद (टोकन आईडी):</p>
-            <p id="tokenDisplay" style="font-family: monospace; color: #38bdf8; word-break: break-all; margin-top: 4px;"></p>
+            <div id="statusResultBox" class="status-result">
+                <div>श्रेणी: <strong id="resCat" style="color: var(--text);"></strong></div>
+                <div style="margin-top: 6px;">वर्तमान स्थिति: <span id="resStatus" class="status-pill"></span></div>
+                <div style="margin-top: 6px; font-size: 0.75rem; color: var(--muted);">अंतिम अपडेट: <span id="resDate"></span></div>
+            </div>
+            <div id="trackError" style="color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none;">टोकन आईडी नहीं मिली। कृपया सही टोकन दर्ज करें।</div>
         </div>
     </div>
 
@@ -90,7 +121,6 @@
             const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
             const iv = crypto.getRandomValues(new Uint8Array(12));
             const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
-            
             const rawKey = await crypto.subtle.exportKey("raw", key);
             return {
                 ciphertext: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
@@ -126,13 +156,12 @@
                     body: JSON.stringify({
                         token_id: tokenId,
                         category: category,
-                        encrypted_details: payloadString
+                        encrypted_details: payloadString,
+                        status: 'लंबित (Pending)'
                     })
                 });
 
-                if (!res.ok) {
-                    throw new Error("डेटा सुरक्षित भेजने में त्रुटि हुई।");
-                }
+                if (!res.ok) throw new Error();
 
                 document.getElementById('tipForm').style.display = 'none';
                 document.getElementById('tokenDisplay').textContent = tokenId;
@@ -145,6 +174,34 @@
                 btn.textContent = "सुरक्षित रूप से भेजें";
             }
         });
+
+        async function checkStatus() {
+            const token = document.getElementById('trackTokenInput').value.trim();
+            const resBox = document.getElementById('statusResultBox');
+            const errBox = document.getElementById('trackError');
+            resBox.style.display = 'none';
+            errBox.style.display = 'none';
+
+            if (!token) return;
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/reports?token_id=eq.${encodeURIComponent(token)}&select=category,status,updated_at`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    const item = data[0];
+                    document.getElementById('resCat').textContent = item.category || 'अज्ञात';
+                    document.getElementById('resStatus').textContent = item.status || 'लंबित (Pending)';
+                    document.getElementById('resDate').textContent = new Date(item.updated_at).toLocaleString('hi-IN');
+                    resBox.style.display = 'block';
+                } else {
+                    errBox.style.display = 'block';
+                }
+            } catch (e) {
+                errBox.style.display = 'block';
+            }
+        }
     </script>
 </body>
 </html>
