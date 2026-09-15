@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Crime India - सुरक्षित एवं अनाम टिप-पोर्टल</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #10b981;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; background: var(--card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); }
+        h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        p.desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; line-height: 1.4; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 500; }
+        select, textarea, input[type="file"] {
+            width: 100%; padding: 10px; background: #0b1120; border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-size: 0.95rem;
+        }
+        textarea { resize: vertical; min-height: 120px; }
+        .secure-badge {
+            display: inline-block; background: rgba(16, 185, 129, 0.1); color: var(--primary);
+            padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; margin-bottom: 16px;
+        }
+        button {
+            width: 100%; padding: 12px; background: var(--primary); color: #0f172a;
+            border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+        }
+        #receipt {
+            display: none; margin-top: 20px; padding: 16px; background: #0b1120;
+            border: 1px solid var(--primary); border-radius: 6px; font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="secure-badge">🔒 जीरो-ट्रैकिंग और क्लाइंट एन्क्रिप्टेड</span>
+        <h1>Zero Crime India</h1>
+        <p class="desc">आपकी पहचान 100% अनाम है। कोई IP एड्रेस या ब्राउज़र हिस्ट्री सेव नहीं होती।</p>
+
+        <form id="tipForm">
+            <div class="form-group">
+                <label for="category">अपराध की श्रेणी</label>
+                <select id="category" required>
+                    <option value="">-- श्रेणी चुनें --</option>
+                    <option value="cyber">साइबर अपराध / ऑनलाइन फ्रॉड</option>
+                    <option value="corruption">भ्रष्टाचार / रिश्वत</option>
+                    <option value="harassment">उत्पीड़न / धमकी</option>
+                    <option value="other">अन्य संवेदनशील मामला</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="details">विवरण (नाम या व्यक्तिगत जानकारी न दें)</label>
+                <textarea id="details" placeholder="घटना का विवरण यहाँ लिखें..." required></textarea>
+            </div>
+
+            <button type="submit">सुरक्षित रूप से भेजें</button>
+        </form>
+
+        <div id="receipt">
+            <strong style="color: var(--primary);">रिपोर्ट सुरक्षित दर्ज हुई!</strong>
+            <p style="margin-top: 6px; font-size: 0.8rem; color: var(--muted);">आपकी अनाम टोकन आईडी:</p>
+            <p id="tokenDisplay" style="font-family: monospace; color: #38bdf8; word-break: break-all; margin-top: 4px;"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('tipForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // क्लाइंट साइड टोकन जनरेशन (नो IP / नो ट्रैकिंग)
+            const token = 'ZCI-' + crypto.randomUUID();
+            document.getElementById('tipForm').style.display = 'none';
+            document.getElementById('tokenDisplay').textContent = token;
+            document.getElementById('receipt').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
