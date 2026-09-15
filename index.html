@@ -14,33 +14,44 @@
             --border: #334155;
             --danger: #ef4444;
             --accent: #38bdf8;
+            --warning: #f59e0b;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 600px; width: 100%; }
-        .card { background: var(--card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
-        h2 { font-size: 1.1rem; color: var(--text); margin-bottom: 12px; }
-        p.desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; line-height: 1.4; }
+        body { background: var(--bg); color: var(--text); padding: 20px 12px; display: flex; justify-content: center; }
+        .container { max-width: 640px; width: 100%; }
+        .card { background: var(--card); padding: 22px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 6px; }
+        h2 { font-size: 1.1rem; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        p.desc { font-size: 0.88rem; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+        
+        .alert-box {
+            background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning);
+            border-radius: 8px; padding: 14px; margin-bottom: 20px; font-size: 0.85rem; color: #fde68a;
+        }
+        .alert-box ul { margin-left: 18px; margin-top: 6px; }
+        .alert-box li { margin-bottom: 4px; }
+
         .form-group { margin-bottom: 16px; }
         label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 500; }
         select, textarea, input[type="text"] {
-            width: 100%; padding: 10px; background: #0b1120; border: 1px solid var(--border);
+            width: 100%; padding: 11px; background: #0b1120; border: 1px solid var(--border);
             border-radius: 6px; color: var(--text); font-size: 0.95rem; outline: none;
         }
-        textarea { resize: vertical; min-height: 120px; }
+        textarea { resize: vertical; min-height: 130px; line-height: 1.4; }
+        
         .secure-badge {
-            display: inline-block; background: rgba(16, 185, 129, 0.1); color: var(--primary);
-            padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; margin-bottom: 16px;
+            display: inline-block; background: rgba(16, 185, 129, 0.12); color: var(--primary);
+            padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 12px; border: 1px solid rgba(16, 185, 129, 0.3);
         }
         button {
             width: 100%; padding: 12px; background: var(--primary); color: #0f172a;
             border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
         }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         #receipt {
             display: none; margin-top: 20px; padding: 16px; background: #0b1120;
-            border: 1px solid var(--primary); border-radius: 6px; font-size: 0.9rem;
+            border: 1px solid var(--primary); border-radius: 8px; font-size: 0.9rem;
         }
         .error-box {
             display: none; margin-top: 15px; padding: 12px; background: rgba(239, 68, 68, 0.1);
@@ -48,66 +59,113 @@
         }
         .status-result {
             display: none; margin-top: 16px; padding: 14px; background: #0b1120;
-            border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
+            border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;
         }
         .status-pill {
             display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold;
-            background: rgba(56, 189, 248, 0.2); color: var(--accent); margin-top: 6px;
+            background: rgba(56, 189, 248, 0.2); color: var(--accent); margin-top: 4px;
         }
+
+        .helpline-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 12px;
+        }
+        .helpline-item {
+            background: #0b1120; border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center;
+        }
+        .helpline-item a { color: var(--accent); font-weight: bold; text-decoration: none; font-size: 1.1rem; display: block; margin-top: 4px; }
+        .disclaimer { font-size: 0.75rem; color: var(--muted); line-height: 1.5; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 16px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- शिकायत दर्ज करने का फ़ॉर्म -->
+        <!-- मुख्य रिपोर्ट फॉर्म कार्ड -->
         <div class="card">
-            <span class="secure-badge">🔒 AES-256 क्लाइंट एन्क्रिप्टेड | शून्य IP लॉगिंग</span>
+            <span class="secure-badge">🛡️ शून्य IP ट्रैकिंग | 256-Bit एंड-टू-एंड लॉक</span>
             <h1>Zero Crime India</h1>
-            <p class="desc">आपकी पहचान 100% अनाम है। आपका विवरण डेटाबेस में जाने से पहले ब्राउज़र में ही सुरक्षित कोड में बदल जाता है।</p>
+            <p class="desc">यह एक स्वतंत्र, गोपनीय एवं सुरक्षित अपराध रिपोर्टिंग पोर्टल है। आपका विवरण डेटाबेस में दर्ज होने से पहले ही एन्क्रिप्ट हो जाता है।</p>
+
+            <div class="alert-box">
+                <strong>⚠️ महत्वपूर्ण सुरक्षा नियम:</strong>
+                <ul>
+                    <li>विवरण में अपना <b>नाम, मोबाइल नंबर, ईमेल या आधार</b> न लिखें।</li>
+                    <li>केवल घटना का स्थान, तारीख और मुख्य तथ्य दर्ज करें।</li>
+                    <li>सबमिट करने के बाद मिलने वाली <b>टोकन आईडी</b> ही आपकी एकमात्र पहचान है।</li>
+                </ul>
+            </div>
 
             <form id="tipForm">
                 <div class="form-group">
                     <label for="category">अपराध की श्रेणी</label>
                     <select id="category" required>
                         <option value="">-- श्रेणी चुनें --</option>
-                        <option value="cyber">साइबर अपराध / ऑनलाइन फ्रॉड</option>
-                        <option value="corruption">भ्रष्टाचार / रिश्वत</option>
-                        <option value="harassment">उत्पीड़न / धमकी</option>
-                        <option value="other">अन्य संवेदनशील मामला</option>
+                        <option value="साइबर अपराध / ऑनलाइन फ्रॉड">साइबर अपराध / ऑनलाइन फ्रॉड</option>
+                        <option value="भ्रष्टाचार / रिश्वत">भ्रष्टाचार / रिश्वत</option>
+                        <option value="महिला सुरक्षा / उत्पीड़न">महिला सुरक्षा / उत्पीड़न</option>
+                        <option value="मादक पदार्थ / तस्करी">मादक पदार्थ / नशीली वस्तुएँ</option>
+                        <option value="अन्य संवेदनशील मामला">अन्य संवेदनशील मामला</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="details">विवरण (नाम या व्यक्तिगत पहचान न दें)</label>
-                    <textarea id="details" placeholder="घटना की पूरी जानकारी यहाँ लिखें..." required></textarea>
+                    <label for="details">घटना का विवरण</label>
+                    <textarea id="details" placeholder="अपराध से संबंधित विस्तृत विवरण यहाँ लिखें (अपनी पहचान उजागर किए बिना)..." required></textarea>
                 </div>
 
-                <button type="submit" id="submitBtn">सुरक्षित रूप से भेजें</button>
+                <button type="submit" id="submitBtn">सुरक्षित एवं गोपनीय रूप से दर्ज करें</button>
             </form>
 
             <div id="errorBox" class="error-box"></div>
 
             <div id="receipt">
-                <strong style="color: var(--primary);">रिपोर्ट डेटाबेस में सुरक्षित दर्ज हो गई!</strong>
-                <p style="margin-top: 6px; font-size: 0.8rem; color: var(--muted);">आपकी अनाम रसीद (टोकन आईडी):</p>
-                <p id="tokenDisplay" style="font-family: monospace; color: #38bdf8; word-break: break-all; margin-top: 4px; font-weight: bold;"></p>
-                <p style="margin-top: 8px; font-size: 0.75rem; color: var(--muted);">* इस टोकन को सुरक्षित रख लें। इसी से आप नीचे अपनी रिपोर्ट की स्थिति जान सकेंगे।</p>
+                <strong style="color: var(--primary);">✓ रिपोर्ट डेटाबेस में सुरक्षित दर्ज हो गई!</strong>
+                <p style="margin-top: 8px; font-size: 0.8rem; color: var(--muted);">आपकी गुप्त रसीद (टोकन आईडी):</p>
+                <p id="tokenDisplay" style="font-family: monospace; color: #38bdf8; word-break: break-all; margin: 6px 0; font-weight: bold; font-size: 1rem;"></p>
+                <p style="font-size: 0.78rem; color: var(--warning); margin-top: 6px;">* इस टोकन का स्क्रीनशॉट ले लें या कॉपी करके रख लें। इसके बिना आप भविष्य में स्टेटस नहीं देख सकेंगे।</p>
             </div>
         </div>
 
-        <!-- स्टेटस चेक करने का सेक्शन -->
+        <!-- स्टेटस ट्रैकर कार्ड -->
         <div class="card">
             <h2>🔍 रिपोर्ट की स्थिति (Status) जाँचें</h2>
-            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 12px;">अपनी टोकन आईडी दर्ज करके देखें कि आपकी शिकायत पर क्या कार्रवाई हुई है:</p>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 12px;">अपनी अनाम टोकन आईडी दर्ज करके वास्तविक स्थिति देखें:</p>
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="trackTokenInput" placeholder="उदा. ZCI-xxxx-xxxx">
-                <button onclick="checkStatus()" style="width: auto; padding: 10px 18px; white-space: nowrap;">जाँचें</button>
+                <button onclick="checkStatus()" style="width: auto; padding: 10px 20px; white-space: nowrap;">जाँचें</button>
             </div>
             <div id="statusResultBox" class="status-result">
                 <div>श्रेणी: <strong id="resCat" style="color: var(--text);"></strong></div>
                 <div style="margin-top: 6px;">वर्तमान स्थिति: <span id="resStatus" class="status-pill"></span></div>
                 <div style="margin-top: 6px; font-size: 0.75rem; color: var(--muted);">अंतिम अपडेट: <span id="resDate"></span></div>
             </div>
-            <div id="trackError" style="color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none;">टोकन आईडी नहीं मिली। कृपया सही टोकन दर्ज करें।</div>
+            <div id="trackError" style="color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none;">टोकन आईडी अमान्य है या रिकॉर्ड नहीं मिला।</div>
+        </div>
+
+        <!-- आपातकालीन हेल्पलाइन कार्ड -->
+        <div class="card">
+            <h2>🚨 आपातकालीन संपर्क (National Helplines)</h2>
+            <p style="font-size: 0.8rem; color: var(--muted);">यदि आप तत्काल आपातकालीन खतरे में हैं, तो तुरंत राष्ट्रीय हेल्पलाइन्स पर संपर्क करें:</p>
+            <div class="helpline-grid">
+                <div class="helpline-item">
+                    <span style="font-size: 0.75rem; color: var(--muted);">राष्ट्रीय आपातकाल</span>
+                    <a href="tel:112">112</a>
+                </div>
+                <div class="helpline-item">
+                    <span style="font-size: 0.75rem; color: var(--muted);">साइबर क्राइम</span>
+                    <a href="tel:1930">1930</a>
+                </div>
+                <div class="helpline-item">
+                    <span style="font-size: 0.75rem; color: var(--muted);">महिला सुरक्षा</span>
+                    <a href="tel:1091">1091</a>
+                </div>
+                <div class="helpline-item">
+                    <span style="font-size: 0.75rem; color: var(--muted);">बाल सुरक्षा</span>
+                    <a href="tel:1098">1098</a>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <strong>कानूनी अस्वीकरण (Disclaimer):</strong> Zero Crime India नागरिकों की व्यक्तिगत गोपनीयता और सुरक्षा की रक्षा हेतु बनाया गया एक तकनीकी प्लेटफ़ॉर्म है। किसी व्यक्ति को बदनाम करने या दुर्भावना से प्रेरित होकर झूठी रिपोर्ट दर्ज करना भारतीय कानून के तहत दंडनीय अपराध है।
+            </div>
         </div>
     </div>
 
@@ -171,7 +229,7 @@
                 errBox.textContent = "त्रुटि: रिपोर्ट सबमिट नहीं हो सकी। कृपया दोबारा प्रयास करें।";
                 errBox.style.display = 'block';
                 btn.disabled = false;
-                btn.textContent = "सुरक्षित रूप से भेजें";
+                btn.textContent = "सुरक्षित एवं गोपनीय रूप से दर्ज करें";
             }
         });
 
