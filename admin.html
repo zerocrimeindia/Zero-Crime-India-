@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZCI - एडमिन डिक्रिप्शन टूल</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #10b981;
+            --border: #334155;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 700px; width: 100%; background: var(--card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); }
+        h1 { font-size: 1.4rem; color: var(--primary); margin-bottom: 12px; }
+        p.desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; }
+        textarea {
+            width: 100%; min-height: 120px; padding: 10px; background: #0b1120;
+            border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+            font-family: monospace; font-size: 0.85rem; outline: none; margin-bottom: 15px;
+        }
+        button {
+            width: 100%; padding: 12px; background: var(--primary); color: #0f172a;
+            border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+        }
+        .result-box {
+            display: none; margin-top: 20px; padding: 16px; background: #0b1120;
+            border: 1px solid var(--primary); border-radius: 6px;
+        }
+        .result-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+        .result-text { font-size: 1.1rem; color: #38bdf8; white-space: pre-wrap; word-break: break-word; }
+        .error { color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Zero Crime India - डिक्रिप्शन पैनल</h1>
+        <p class="desc">डेटाबेस से <code>encrypted_details</code> कॉपी करके यहाँ पेस्ट करें और अनलॉक करें।</p>
+
+        <label for="encryptedInput">एन्क्रिप्टेड पेलोड (JSON / Ciphertext):</label>
+        <textarea id="encryptedInput" placeholder='{"ciphertext":"...", "iv":"...", "key":"..."}'></textarea>
+
+        <button onclick="decryptPayload()">डिक्रिप्ट करें (Unlock Details)</button>
+        <div id="errorMsg" class="error">त्रुटि: पेलोड अमान्य है या डिक्रिप्ट नहीं हो सका।</div>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-title">असली शिकायत विवरण:</div>
+            <div id="decryptedOutput" class="result-text"></div>
+        </div>
+    </div>
+
+    <script>
+        function base64ToUint8(base64) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes;
+        }
+
+        async function decryptPayload() {
+            const raw = document.getElementById('encryptedInput').value.trim();
+            const err = document.getElementById('errorMsg');
+            const resBox = document.getElementById('resultBox');
+            const out = document.getElementById('decryptedOutput');
+            
+            err.style.display = 'none';
+            resBox.style.display = 'none';
+
+            if (!raw) return;
+
+            try {
+                const data = JSON.parse(raw);
+                const rawKey = base64ToUint8(data.key);
+                const iv = base64ToUint8(data.iv);
+                const ciphertext = base64ToUint8(data.ciphertext);
+
+                const key = await crypto.subtle.importKey(
+                    "raw",
+                    rawKey,
+                    { name: "AES-GCM" },
+                    false,
+                    ["decrypt"]
+                );
+
+                const decryptedBuffer = await crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    ciphertext
+                );
+
+                const decoder = new TextDecoder();
+                const plainText = decoder.decode(decryptedBuffer);
+
+                out.textContent = plainText;
+                resBox.style.display = 'block';
+            } catch (e) {
+                err.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
