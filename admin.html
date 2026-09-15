@@ -1,108 +1,181 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZCI - एडमिन डिक्रिप्शन टूल</title>
+    <title>ZCI - सुरक्षित एडमिन डैशबोर्ड</title>
     <style>
         :root {
-            --bg: #0f172a;
+            --bg: #0b1120;
             --card: #1e293b;
             --text: #f8fafc;
             --muted: #94a3b8;
             --primary: #10b981;
             --border: #334155;
             --danger: #ef4444;
+            --accent: #38bdf8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 700px; width: 100%; background: var(--card); padding: 24px; border-radius: 12px; border: 1px solid var(--border); }
-        h1 { font-size: 1.4rem; color: var(--primary); margin-bottom: 12px; }
-        p.desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; }
-        textarea {
-            width: 100%; min-height: 120px; padding: 10px; background: #0b1120;
-            border: 1px solid var(--border); border-radius: 6px; color: var(--text);
-            font-family: monospace; font-size: 0.85rem; outline: none; margin-bottom: 15px;
+        .container { max-width: 900px; width: 100%; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        h1 { font-size: 1.4rem; color: var(--primary); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .auth-box { display: flex; gap: 10px; }
+        input[type="password"], select {
+            padding: 10px; background: #070d18; border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-size: 0.95rem; outline: none;
         }
+        input[type="password"] { flex-grow: 1; }
         button {
-            width: 100%; padding: 12px; background: var(--primary); color: #0f172a;
-            border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+            padding: 10px 16px; background: var(--primary); color: #070d18;
+            border: none; border-radius: 6px; font-weight: 600; cursor: pointer;
         }
-        .result-box {
-            display: none; margin-top: 20px; padding: 16px; background: #0b1120;
-            border: 1px solid var(--primary); border-radius: 6px;
-        }
-        .result-title { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
-        .result-text { font-size: 1.1rem; color: #38bdf8; white-space: pre-wrap; word-break: break-word; }
-        .error { color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .report-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-cat { background: rgba(56, 189, 248, 0.15); color: var(--accent); }
+        .token { font-family: monospace; font-size: 0.85rem; color: var(--muted); }
+        .details-box { background: #070d18; border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin: 12px 0; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.5; color: #e2e8f0; }
+        .actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; font-size: 0.85rem; }
+        .status-select { font-size: 0.85rem; padding: 6px 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔐 Zero Crime India - डिक्रिप्शन पैनल</h1>
-        <p class="desc">डेटाबेस से <code>encrypted_details</code> कॉपी करके यहाँ पेस्ट करें और अनलॉक करें।</p>
+        <header>
+            <h1>🔐 Zero Crime India - एडमिन कंसोल</h1>
+            <span style="font-size: 0.8rem; color: var(--muted);">एंड-टू-एंड डिक्रिप्शन एक्टिव</span>
+        </header>
 
-        <label for="encryptedInput">एन्क्रिप्टेड पेलोड (JSON / Ciphertext):</label>
-        <textarea id="encryptedInput" placeholder='{"ciphertext":"...", "iv":"...", "key":"..."}'></textarea>
+        <div id="authSection" class="card">
+            <label style="display:block; margin-bottom: 8px; font-size: 0.9rem;">डैशबोर्ड अनलॉक करने के लिए मास्टर पासवर्ड दर्ज करें:</label>
+            <div class="auth-box">
+                <input type="password" id="adminPass" placeholder="गुप्त पासवर्ड दर्ज करें...">
+                <button onclick="unlockDashboard()">लॉगिन करें</button>
+            </div>
+            <div id="authError" style="color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none;">गलत पासवर्ड!</div>
+        </div>
 
-        <button onclick="decryptPayload()">डिक्रिप्ट करें (Unlock Details)</button>
-        <div id="errorMsg" class="error">त्रुटि: पेलोड अमान्य है या डिक्रिप्ट नहीं हो सका।</div>
-
-        <div id="resultBox" class="result-box">
-            <div class="result-title">असली शिकायत विवरण:</div>
-            <div id="decryptedOutput" class="result-text"></div>
+        <div id="dashboardSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 1.1rem; color: var(--text);">प्राप्त रिपोर्ट्स (<span id="reportCount">0</span>)</h2>
+                <button onclick="loadAndDecryptReports()" style="font-size: 0.85rem; padding: 6px 12px;">🔄 रिफ्रेश करें</button>
+            </div>
+            <div id="loadingText" style="color: var(--muted); font-size: 0.9rem; display: none;">डेटाबेस से रिपोर्ट्स डिक्रिप्ट हो रही हैं...</div>
+            <div id="reportsList"></div>
         </div>
     </div>
 
     <script>
+        const MASTER_SECRET = "ZCI@Admin#2026";
+        const SUPABASE_URL = "https://styviwkbbctiutdyfpnh.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_qo6tcPg6dJdcPyhZFMMWFw_OpBP0xHL";
+
+        function unlockDashboard() {
+            const pass = document.getElementById('adminPass').value;
+            const err = document.getElementById('authError');
+            if (pass === MASTER_SECRET) {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                loadAndDecryptReports();
+            } else {
+                err.style.display = 'block';
+            }
+        }
+
         function base64ToUint8(base64) {
             const binary = atob(base64);
             const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
             return bytes;
         }
 
-        async function decryptPayload() {
-            const raw = document.getElementById('encryptedInput').value.trim();
-            const err = document.getElementById('errorMsg');
-            const resBox = document.getElementById('resultBox');
-            const out = document.getElementById('decryptedOutput');
-            
-            err.style.display = 'none';
-            resBox.style.display = 'none';
-
-            if (!raw) return;
-
+        async function decryptPayload(payloadStr) {
             try {
-                const data = JSON.parse(raw);
+                const data = JSON.parse(payloadStr);
                 const rawKey = base64ToUint8(data.key);
                 const iv = base64ToUint8(data.iv);
                 const ciphertext = base64ToUint8(data.ciphertext);
-
-                const key = await crypto.subtle.importKey(
-                    "raw",
-                    rawKey,
-                    { name: "AES-GCM" },
-                    false,
-                    ["decrypt"]
-                );
-
-                const decryptedBuffer = await crypto.subtle.decrypt(
-                    { name: "AES-GCM", iv: iv },
-                    key,
-                    ciphertext
-                );
-
-                const decoder = new TextDecoder();
-                const plainText = decoder.decode(decryptedBuffer);
-
-                out.textContent = plainText;
-                resBox.style.display = 'block';
+                const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ciphertext);
+                return new TextDecoder().decode(decrypted);
             } catch (e) {
-                err.style.display = 'block';
+                return "[डिक्रिप्शन विफल / डेटा दूषित]";
+            }
+        }
+
+        async function loadAndDecryptReports() {
+            const loading = document.getElementById('loadingText');
+            const list = document.getElementById('reportsList');
+            loading.style.display = 'block';
+            list.innerHTML = '';
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/reports?select=*&order=created_at.desc`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const reports = await res.json();
+                document.getElementById('reportCount').textContent = reports.length;
+                loading.style.display = 'none';
+
+                for (const report of reports) {
+                    const decryptedText = await decryptPayload(report.encrypted_details);
+                    const date = new Date(report.created_at).toLocaleString('hi-IN');
+
+                    const item = document.createElement('div');
+                    item.className = 'report-card';
+                    item.innerHTML = `
+                        <div class="report-header">
+                            <div>
+                                <span class="badge badge-cat">${report.category || 'अज्ञात'}</span>
+                                <span class="token" style="margin-left: 8px;">${report.token_id}</span>
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--muted);">${date}</span>
+                        </div>
+                        <div class="details-box">${decryptedText}</div>
+                        <div class="actions">
+                            <div>
+                                <label style="margin-right: 6px;">स्थिति (Status):</label>
+                                <select class="status-select" onchange="updateStatus('${report.token_id}', this.value)">
+                                    <option value="लंबित (Pending)" ${report.status === 'लंबित (Pending)' ? 'selected' : ''}>लंबित (Pending)</option>
+                                    <option value="समीक्षाधीन (Under Review)" ${report.status === 'समीक्षाधीन (Under Review)' ? 'selected' : ''}>समीक्षाधीन (Under Review)</option>
+                                    <option value="कार्रवाई जारी (In Progress)" ${report.status === 'कार्रवाई जारी (In Progress)' ? 'selected' : ''}>कार्रवाई जारी (In Progress)</option>
+                                    <option value="निस्तारित (Resolved)" ${report.status === 'निस्तारित (Resolved)' ? 'selected' : ''}>निस्तारित (Resolved)</option>
+                                </select>
+                            </div>
+                            <span id="stat-msg-${report.token_id}" style="color: var(--primary); font-size: 0.8rem;"></span>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                }
+            } catch (err) {
+                loading.textContent = "डेटा लोड करने में त्रुटि हुई।";
+            }
+        }
+
+        async function updateStatus(tokenId, newStatus) {
+            const msgSpan = document.getElementById(`stat-msg-${tokenId}`);
+            msgSpan.textContent = "अपडेट हो रहा है...";
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/reports?token_id=eq.${tokenId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ status: newStatus, updated_at: new Date().toISOString() })
+                });
+                if (res.ok) {
+                    msgSpan.textContent = "✓ अपडेटेड";
+                    setTimeout(() => { msgSpan.textContent = ''; }, 2500);
+                }
+            } catch (e) {
+                msgSpan.textContent = "त्रुटि!";
             }
         }
     </script>
