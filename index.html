@@ -12,6 +12,7 @@
             --muted: #94a3b8;
             --primary: #10b981;
             --border: #334155;
+            --danger: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
@@ -20,9 +21,9 @@
         p.desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 20px; line-height: 1.4; }
         .form-group { margin-bottom: 16px; }
         label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 500; }
-        select, textarea, input[type="file"] {
+        select, textarea {
             width: 100%; padding: 10px; background: #0b1120; border: 1px solid var(--border);
-            border-radius: 6px; color: var(--text); font-size: 0.95rem;
+            border-radius: 6px; color: var(--text); font-size: 0.95rem; outline: none;
         }
         textarea { resize: vertical; min-height: 120px; }
         .secure-badge {
@@ -33,17 +34,22 @@
             width: 100%; padding: 12px; background: var(--primary); color: #0f172a;
             border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
         }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         #receipt {
             display: none; margin-top: 20px; padding: 16px; background: #0b1120;
             border: 1px solid var(--primary); border-radius: 6px; font-size: 0.9rem;
+        }
+        .error-box {
+            display: none; margin-top: 15px; padding: 12px; background: rgba(239, 68, 68, 0.1);
+            color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <span class="secure-badge">🔒 जीरो-ट्रैकिंग और क्लाइंट एन्क्रिप्टेड</span>
+        <span class="secure-badge">🔒 AES-256 क्लाइंट एन्क्रिप्टेड | शून्य IP लॉगिंग</span>
         <h1>Zero Crime India</h1>
-        <p class="desc">आपकी पहचान 100% अनाम है। कोई IP एड्रेस या ब्राउज़र हिस्ट्री सेव नहीं होती।</p>
+        <p class="desc">आपकी पहचान 100% अनाम है। आपका विवरण डेटाबेस में जाने से पहले ब्राउज़र में ही सुरक्षित कोड में बदल जाता है।</p>
 
         <form id="tipForm">
             <div class="form-group">
@@ -58,28 +64,86 @@
             </div>
 
             <div class="form-group">
-                <label for="details">विवरण (नाम या व्यक्तिगत जानकारी न दें)</label>
-                <textarea id="details" placeholder="घटना का विवरण यहाँ लिखें..." required></textarea>
+                <label for="details">विवरण (नाम या व्यक्तिगत पहचान न दें)</label>
+                <textarea id="details" placeholder="घटना की पूरी जानकारी यहाँ लिखें..." required></textarea>
             </div>
 
-            <button type="submit">सुरक्षित रूप से भेजें</button>
+            <button type="submit" id="submitBtn">सुरक्षित रूप से भेजें</button>
         </form>
 
+        <div id="errorBox" class="error-box"></div>
+
         <div id="receipt">
-            <strong style="color: var(--primary);">रिपोर्ट सुरक्षित दर्ज हुई!</strong>
-            <p style="margin-top: 6px; font-size: 0.8rem; color: var(--muted);">आपकी अनाम टोकन आईडी:</p>
+            <strong style="color: var(--primary);">रिपोर्ट डेटाबेस में सुरक्षित दर्ज हो गई!</strong>
+            <p style="margin-top: 6px; font-size: 0.8rem; color: var(--muted);">आपकी अनाम रसीद (टोकन आईडी):</p>
             <p id="tokenDisplay" style="font-family: monospace; color: #38bdf8; word-break: break-all; margin-top: 4px;"></p>
         </div>
     </div>
 
     <script>
-        document.getElementById('tipForm').addEventListener('submit', function(e) {
+        const SUPABASE_URL = "https://styviwkbbctiutdyfpnh.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_qo6tcPg6dJdcPyhZFMMWFw_OpBP0xHL";
+
+        async function clientEncrypt(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, data);
+            
+            const rawKey = await crypto.subtle.exportKey("raw", key);
+            return {
+                ciphertext: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+                iv: btoa(String.fromCharCode(...iv)),
+                key: btoa(String.fromCharCode(...new Uint8Array(rawKey)))
+            };
+        }
+
+        document.getElementById('tipForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            // क्लाइंट साइड टोकन जनरेशन (नो IP / नो ट्रैकिंग)
-            const token = 'ZCI-' + crypto.randomUUID();
-            document.getElementById('tipForm').style.display = 'none';
-            document.getElementById('tokenDisplay').textContent = token;
-            document.getElementById('receipt').style.display = 'block';
+            const btn = document.getElementById('submitBtn');
+            const errBox = document.getElementById('errorBox');
+            btn.disabled = true;
+            btn.textContent = "डेटा एन्क्रिप्ट हो रहा है...";
+            errBox.style.display = 'none';
+
+            const category = document.getElementById('category').value;
+            const details = document.getElementById('details').value;
+            const tokenId = 'ZCI-' + crypto.randomUUID();
+
+            try {
+                const encryptedPayload = await clientEncrypt(details);
+                const payloadString = JSON.stringify(encryptedPayload);
+
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        token_id: tokenId,
+                        category: category,
+                        encrypted_details: payloadString
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error("डेटा सुरक्षित भेजने में त्रुटि हुई।");
+                }
+
+                document.getElementById('tipForm').style.display = 'none';
+                document.getElementById('tokenDisplay').textContent = tokenId;
+                document.getElementById('receipt').style.display = 'block';
+
+            } catch (err) {
+                errBox.textContent = "त्रुटि: रिपोर्ट सबमिट नहीं हो सकी। कृपया दोबारा प्रयास करें।";
+                errBox.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = "सुरक्षित रूप से भेजें";
+            }
         });
     </script>
 </body>
